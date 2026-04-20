@@ -1,6 +1,6 @@
 # Exercice 2 — Étape 2 : architecture front avec state management
 
-Ce document détaille la **couche d’état** de l’**architecture front cible** (Redux Toolkit + thunks). Pour la vision d’ensemble (React, API, monolithe Laravel), voir le [README](../README.md) et l’[étape 1](architecture-front-exercice2-etape1.md).
+Ce document détaille la **couche d’état** de l’**architecture front** (Redux Toolkit + thunks). **Synthèse étape 4 OC** (schémas globaux, View / ViewModel / Model, catalogue API + exemples JSON, séquence front → BDD) : **[architecture-etape4-finale.md](architecture-etape4-finale.md)**. Voir aussi le [README](../README.md) et l’[étape 1](architecture-front-exercice2-etape1.md).
 
 ## Sommaire
 
@@ -91,35 +91,28 @@ flowchart TB
   C -->|"useSelector"| SEL
 ```
 
-**Organisation des fichiers**
+**Organisation des fichiers** (implémentation réelle du dépôt, JavaScript / JSX)
 
 ```text
-resources/js/                    # ou frontend/src/ selon le projet
-├── app/
-│   └── store.ts                 # configureStore, root reducer
+resources/js/
+├── app.jsx
+├── AppRoutes.jsx
+├── AppSessionGate.jsx
+├── store/
+│   ├── store.js                 # configureStore
+│   └── hooks.js
 ├── features/
-│   ├── auth/
-│   │   ├── authSlice.ts
-│   │   └── authThunks.ts        # login, logout, restore session
-│   ├── notes/
-│   │   ├── notesSlice.ts
-│   │   ├── notesThunks.ts
-│   │   └── notesSelectors.ts
-│   └── tags/
-│       ├── tagsSlice.ts
-│       ├── tagsThunks.ts
-│       └── tagsSelectors.ts
-├── services/
-│   ├── apiClient.ts             # fetch/axios, baseURL, Authorization
-│   └── endpoints.ts             # appels login, notes, tags (sans JSX)
-└── ui/
-    ├── pages/
-    │   ├── NotesPage.tsx
-    │   └── TagsPage.tsx
-    └── components/
-        ├── NoteList.tsx
-        ├── NoteForm.tsx
-        └── TagForm.tsx
+│   ├── auth/authSlice.js
+│   ├── notes/notesSlice.js
+│   └── tags/tagsSlice.js
+├── lib/
+│   ├── api.js                   # axios, baseURL /api, Bearer
+│   └── formatApiError.js
+├── layouts/AppShell.jsx
+└── pages/
+    ├── LoginPage.jsx
+    ├── NotesPage.jsx
+    └── TagsPage.jsx
 ```
 
 ---

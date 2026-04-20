@@ -8,7 +8,7 @@ Projet **Renote** : prise de notes, relations entre notes et tags — évolution
 - [Architecture cible (synthèse)](#architecture-cible-synthèse)
   - [Description](#description)
   - [Justification](#justification)
-- [Documentation détaillée](#documentation-détaillée)
+- [Documentation détaillée](#documentation-détaillée) (dont **architecture étape 4**)
 - [Migration React (étapes)](#migration-react-étapes)
 - [Front React : arborescence, sécurité, assets](#front-react--arborescence-sécurité-assets)
 - [Installation](#installation)
@@ -72,6 +72,7 @@ flowchart LR
 | Document | Contenu |
 |----------|---------|
 | Ce README (sections *Architecture*, *Migration*, *Front React*) | Synthèse soutenance OC : périmètre SPA, arborescence `resources/js/`, sécurité API vs coquille `/app`. |
+| [docs/architecture-etape4-finale.md](docs/architecture-etape4-finale.md) | **Document d’architecture final (étape 4 OC)** : schémas base/cible, couches back & front, **catalogue REST + exemples JSON**, SOLID, séquence front → BDD. |
 | [docs/architecture-backend-etape4.md](docs/architecture-backend-etape4.md) | Évolution back-end, services, API REST |
 | [docs/architecture-front-exercice2-etape1.md](docs/architecture-front-exercice2-etape1.md) | Analyse du front actuel et écart vers la cible |
 | [docs/architecture-front-exercice2-etape2.md](docs/architecture-front-exercice2-etape2.md) | Front cible : Redux Toolkit et flux de données |

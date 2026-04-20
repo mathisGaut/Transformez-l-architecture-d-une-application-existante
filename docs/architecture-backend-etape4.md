@@ -2,6 +2,8 @@
 
 Objectif : décrire l’évolution du back-end et l’API REST, de façon **simple** et alignée sur le code actuel.
 
+**Synthèse finale (étape OC 4)** — schémas globaux, catalogue API avec **exemples JSON**, SOLID, séquence front → BDD : **[architecture-etape4-finale.md](architecture-etape4-finale.md)**.
+
 ## Sommaire
 
 - [Architecture cible (back-end) et justification](#architecture-cible-back-end-et-justification)
@@ -22,7 +24,7 @@ L’architecture **cible** côté serveur pour ce parcours est un **monolithe La
 - une **API REST** (`routes/api.php`, contrôleurs dédiés, réponses JSON) pour tout client externe au cycle requête/réponse « page web classique » ;
 - des **services applicatifs** (`NoteService`, `TagService`, interfaces) qui concentrent la logique CRUD et les règles d’accès par utilisateur ;
 - les **modèles Eloquent** pour le mapping relationnel, appelés **depuis les services** (pas de logique métier dispersée dans les contrôleurs) ;
-- l’**authentification API** via **Laravel Sanctum** (tokens Bearer), complémentaire à l’auth web par session lorsque Livewire est encore utilisé.
+- l’**authentification API** via **Laravel Sanctum** (tokens Bearer) pour la SPA React ; l’auth web par session sert encore **login/register/settings** (Volt / Blade).
 
 Cette cible **n’impose pas** une couche Repository séparée : le périmètre métier reste limité ; les services jouent le rôle d’orchestrateurs et gardent le code lisible sans sur-ingénierie.
 
@@ -74,26 +76,25 @@ flowchart TB
 
 ## 3. Schéma — architecture back-end refactorisée (actuelle)
 
+> Le périmètre **notes / tags** côté navigateur passe par la **SPA React** (`/app`) qui consomme uniquement **`routes/api.php`** ; le **dashboard Blade** et les **écrans Volt** (profil, auth) utilisent **`routes/web.php`**. Les composants Livewire **Notes / TagForm** ont été retirés du dépôt.
+
 ```mermaid
 flowchart TB
   subgraph clients [Clients]
-    WEB[Navigateur / Livewire]
-    API[Client API JSON]
+    SPA[SPA React /app]
+    BLADE[Blade / Volt auth et settings]
   end
   subgraph laravel [Laravel]
-    RW[Routes web]
+    RW[Routes web.php]
     RA[Routes api.php]
-    LW[Livewire]
     CAPI[Contrôleurs API]
     S[Services + interfaces]
     M[Modèles Eloquent]
   end
   DB[(Base de données)]
-  WEB --> RW --> LW
-  WEB --> RA
-  API --> RA
+  SPA --> RA
+  BLADE --> RW
   RA --> CAPI
-  LW --> S
   CAPI --> S
   S --> M
   M --> DB
@@ -109,8 +110,8 @@ flowchart TB
 |--------|------|
 | **Routes** (`web.php`, `api.php`) | Déclarent les URL, le middleware (`auth`, `auth:sanctum`) et le contrôleur ou la vue cible. |
 | **Contrôleurs API** | Reçoivent la requête HTTP, **valident** les entrées, appellent un service, renvoient du **JSON**. |
-| **Composants Livewire** | Gèrent l’interface web ; appellent les **mêmes** services que l’API (pas de duplication de règles). |
-| **Services (+ contrats)** | Règles métier et accès données orchestré autour des modèles (équivalent pratique d’une couche « repository + use case » allégée). |
+| **Vues Blade / Volt** | Auth, réglages utilisateur, dashboard « pont » vers la SPA — **sans** composants Livewire notes/tags (supprimés). |
+| **Services (+ contrats)** | Règles métier et accès données orchestré autour des modèles (ex. `NoteService::deleteForUser` vérifie `user_id` avant suppression). |
 | **Modèles** | Mapping tables, relations, attributs remplissables. |
 
 ---
@@ -131,3 +132,5 @@ flowchart TB
 | `POST` | `/api/tags` | Oui | Corps : `name`. Crée un tag. |
 
 **Codes utiles** : `201` création, `204` suppression sans corps, erreurs de validation en `422`, non authentifié en `401`.
+
+**Exemples de corps JSON** (réponses typiques, erreurs `422`) : voir le catalogue détaillé dans **[architecture-etape4-finale.md](architecture-etape4-finale.md)** § 4.

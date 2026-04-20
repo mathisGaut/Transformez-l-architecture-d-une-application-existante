@@ -1,5 +1,7 @@
 # Exercice 2 — Étape 1 : analyse de l’architecture front actuelle (couplages)
 
+> **État du dépôt** : la migration **notes / tags** vers **React + Redux Toolkit + API** est **réalisée**. Les diagrammes ci-dessous incluent encore l’**historique Livewire** à des fins de comparaison pédagogique ; la synthèse à jour des schémas et du parcours requête figure dans **[architecture-etape4-finale.md](architecture-etape4-finale.md)**.
+
 ## Sommaire
 
 - [Description de l’architecture cible (front)](#description-de-larchitecture-cible-front)
