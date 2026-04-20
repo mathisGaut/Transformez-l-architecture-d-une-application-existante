@@ -1,4 +1,4 @@
-# Document d’architecture — back-end (Étape 4)
+# Document d’architecture — back-end (Exercice 1 - Étape 4)
 
 Objectif : décrire l’évolution du back-end et l’API REST, de façon **simple** et alignée sur le code actuel.
 
@@ -96,12 +96,3 @@ flowchart TB
 | `POST` | `/api/tags` | Oui | Corps : `name`. Crée un tag. |
 
 **Codes utiles** : `201` création, `204` suppression sans corps, erreurs de validation en `422`, non authentifié en `401`.
-
----
-
-## 6. Points de vigilance (rappel consigne)
-
-- Les schémas ci-dessus correspondent à la structure **routes → Livewire ou contrôleurs API → services → modèles**.
-- La consigne OpenClassrooms cite parfois les **repositories** : ici le rôle « accès structuré aux données » est assumé par les **services** pour limiter la complexité.
-
-Pour les diagrammes « présentables », vous pouvez recopier les schémas **Mermaid** dans [draw.io](https://app.diagrams.net/) ou les exporter depuis un outil compatible.
