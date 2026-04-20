@@ -10,6 +10,7 @@ Projet **Renote** : prise de notes, relations entre notes et tags — évolution
   - [Justification](#justification)
 - [Documentation détaillée](#documentation-détaillée)
 - [Migration React (étapes)](#migration-react-étapes)
+- [Front React : arborescence, sécurité, assets](#front-react--arborescence-sécurité-assets)
 - [Installation](#installation)
 
 ---
@@ -70,6 +71,7 @@ flowchart LR
 
 | Document | Contenu |
 |----------|---------|
+| Ce README (sections *Architecture*, *Migration*, *Front React*) | Synthèse soutenance OC : périmètre SPA, arborescence `resources/js/`, sécurité API vs coquille `/app`. |
 | [docs/architecture-backend-etape4.md](docs/architecture-backend-etape4.md) | Évolution back-end, services, API REST |
 | [docs/architecture-front-exercice2-etape1.md](docs/architecture-front-exercice2-etape1.md) | Analyse du front actuel et écart vers la cible |
 | [docs/architecture-front-exercice2-etape2.md](docs/architecture-front-exercice2-etape2.md) | Front cible : Redux Toolkit et flux de données |
@@ -84,9 +86,48 @@ flowchart LR
 | **2 — Notes via API** | Fait | Liste **`GET /api/notes`**, création **`POST /api/notes`** (`text`, `tag_id`), suppression **`DELETE /api/notes/{id}`** ; sélection du tag depuis **`GET /api/tags`**. |
 | **3 — Tags via API** | Fait | Liste **`GET /api/tags`**, création **`POST /api/tags`** (`name`, validation unique). |
 | **4 — State management (RTK)** | Fait | **`@reduxjs/toolkit`** + **`react-redux`** : `configureStore`, slices **`auth`** (`initializeAuth`, `login`, `logout`), **`notes`** (`fetchNotes`, `createNote`, `deleteNote`), **`tags`** (`fetchTags`, `createTag`). Composants connectés via **`useAppDispatch`** / **`useAppSelector`** ; gate **`AppSessionGate`** pour `initializeAuth`. Voir `resources/js/store/` et `resources/js/features/`. |
-| **5 — Retrait Livewire** | À venir | Supprimer les composants Livewire du périmètre notes/tags une fois la SPA stabilisée. |
+| **5 — Retrait Livewire (notes / tags)** | Fait | `app/Livewire/Notes.php`, `TagForm.php` et vues associées supprimés. **`/notes`** et **`/tags`** (web) redirigent vers **`/app/notes`** et **`/app/tags`**. Le **dashboard** Blade sert de point d’entrée (liens + rappel session web vs token API) ; le menu **Flux** inclut des liens vers la SPA. |
 
 En développement, lancer **`npm run dev`** en parallèle de PHP/Herd pour le rechargement à chaud des fichiers React.
+
+---
+
+## Front React : arborescence, sécurité, assets
+
+### Arborescence (`resources/js/`)
+
+Vue d’ensemble du code SPA (sans détail de chaque fichier) :
+
+```text
+resources/js/
+├── app.jsx                 # Point d’entrée Vite : Redux Provider + React Router + session gate
+├── AppRoutes.jsx           # Routes (/login, /notes, /tags) et garde selon auth Redux
+├── AppSessionGate.jsx      # Charge l’utilisateur API au démarrage si un token existe
+├── pages/                  # Écrans : LoginPage, NotesPage, TagsPage
+├── layouts/                # AppShell (nav + outlet)
+├── features/
+│   ├── auth/               # Slice + thunks : initializeAuth, login, logout
+│   ├── notes/              # Slice + thunks : fetch/create/delete notes
+│   └── tags/               # Slice + thunks : fetch/create tags
+├── store/                  # configureStore, hooks useAppDispatch / useAppSelector
+└── lib/                    # Client HTTP axios (base `/api`), format des erreurs API
+```
+
+La vue Blade **`resources/views/spa.blade.php`** ne contient que la coquille HTML (`#spa-root`) et **`@vite`** pour charger CSS + bundle JS.
+
+### Sécurité (consignes OC : routes protégées)
+
+| Zone | Rôle |
+|------|------|
+| **`GET /app/...`** | Sert le **HTML** et le **JavaScript** de la SPA (pas de données métier dans la réponse initiale). |
+| **`/api/*` (sauf login)** | Données JSON protégées par **`auth:sanctum`** : le navigateur doit envoyer **`Authorization: Bearer <token>`** (obtenu via **`POST /api/login`**). |
+| **Session Laravel** (cookie, `/login` Livewire, `/dashboard`) | **Indépendante** du token SPA : être connecté au site Blade **ne** connecte **pas** automatiquement la SPA ; il faut se connecter sur **`/app/login`** pour obtenir un token. |
+
+Ainsi, les **endpoints métier ne sont pas exposés sans authentification** ; la SPA ne fait pas confiance au seul chargement de page pour accéder aux données.
+
+### Assets (consignes OC : Vite + React)
+
+Après toute modification des fichiers **`resources/js/**` ou **`resources/css/app.css`**, soit lancer **`npm run dev`** (rechargement à chaud), soit **`npm run build`** pour régénérer **`public/build/`** (sinon le navigateur garde un ancien bundle).
 
 ---
 

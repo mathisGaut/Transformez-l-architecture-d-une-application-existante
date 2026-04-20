@@ -15,6 +15,12 @@
                 <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                     {{ __('Dashboard') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="document-text" :href="url('/app/notes')" :current="request()->is('app/notes')" tag="a">
+                    {{ __('Notes') }}
+                </flux:navbar.item>
+                <flux:navbar.item icon="tag" :href="url('/app/tags')" :current="request()->is('app/tags')" tag="a">
+                    {{ __('Tags') }}
+                </flux:navbar.item>
             </flux:navbar>
 
             <flux:spacer />
@@ -101,6 +107,8 @@
                     <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                     {{ __('Dashboard') }}
                     </flux:navlist.item>
+                    <flux:navlist.item icon="document-text" :href="url('/app/notes')" :current="request()->is('app/notes')" tag="a">{{ __('Notes') }}</flux:navlist.item>
+                    <flux:navlist.item icon="tag" :href="url('/app/tags')" :current="request()->is('app/tags')" tag="a">{{ __('Tags') }}</flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 
