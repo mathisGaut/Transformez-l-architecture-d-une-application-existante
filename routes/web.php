@@ -7,6 +7,15 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+/*
+|--------------------------------------------------------------------------
+| SPA React (API REST) — /app, /app/notes, …
+|--------------------------------------------------------------------------
+*/
+Route::get('/app/{any?}', fn () => view('spa'))
+    ->where('any', '.*')
+    ->name('spa');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

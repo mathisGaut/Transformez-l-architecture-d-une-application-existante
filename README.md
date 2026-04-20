@@ -9,6 +9,7 @@ Projet **Renote** : prise de notes, relations entre notes et tags — évolution
   - [Description](#description)
   - [Justification](#justification)
 - [Documentation détaillée](#documentation-détaillée)
+- [Migration React (étapes)](#migration-react-étapes)
 - [Installation](#installation)
 
 ---
@@ -72,6 +73,20 @@ flowchart LR
 | [docs/architecture-backend-etape4.md](docs/architecture-backend-etape4.md) | Évolution back-end, services, API REST |
 | [docs/architecture-front-exercice2-etape1.md](docs/architecture-front-exercice2-etape1.md) | Analyse du front actuel et écart vers la cible |
 | [docs/architecture-front-exercice2-etape2.md](docs/architecture-front-exercice2-etape2.md) | Front cible : Redux Toolkit et flux de données |
+
+---
+
+## Migration React (étapes)
+
+| Étape | Statut | Contenu |
+|-------|--------|---------|
+| **1 — Socle SPA + auth API** | Fait | Application React sous **`/app`** (`/app/login`, navigation). **`POST /api/login`**, token Sanctum, **`POST /api/logout`**. Le dashboard **Livewire** (`/dashboard`) reste disponible en parallèle. |
+| **2 — Notes via API** | Fait | Liste **`GET /api/notes`**, création **`POST /api/notes`** (`text`, `tag_id`), suppression **`DELETE /api/notes/{id}`** ; sélection du tag depuis **`GET /api/tags`**. |
+| **3 — Tags via API** | Fait | Liste **`GET /api/tags`**, création **`POST /api/tags`** (`name`, validation unique). |
+| **4 — State management (RTK)** | À venir | Centraliser auth + données dans Redux Toolkit selon la doc [étape 2](docs/architecture-front-exercice2-etape2.md). |
+| **5 — Retrait Livewire** | À venir | Supprimer les composants Livewire du périmètre notes/tags une fois la SPA stabilisée. |
+
+En développement, lancer **`npm run dev`** en parallèle de PHP/Herd pour le rechargement à chaud des fichiers React.
 
 ---
 
