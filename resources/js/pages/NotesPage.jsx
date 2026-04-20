@@ -1,67 +1,53 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import api from '../lib/api.js';
+import { createNote, deleteNote, fetchNotes } from '../features/notes/notesSlice.js';
+import { fetchTags } from '../features/tags/tagsSlice.js';
 import { formatValidationMessage } from '../lib/formatApiError.js';
+import { useAppDispatch, useAppSelector } from '../store/hooks.js';
 
 export default function NotesPage() {
-    const [notes, setNotes] = useState([]);
-    const [tags, setTags] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [loadError, setLoadError] = useState('');
+    const dispatch = useAppDispatch();
+    const notes = useAppSelector((s) => s.notes.items);
+    const tags = useAppSelector((s) => s.tags.items);
+    const listStatus = useAppSelector((s) => s.notes.listStatus);
+    const tagsListStatus = useAppSelector((s) => s.tags.listStatus);
+    const listError = useAppSelector((s) => s.notes.listError);
+    const tagsListError = useAppSelector((s) => s.tags.listError);
+    const createError = useAppSelector((s) => s.notes.createError);
+    const deleteError = useAppSelector((s) => s.notes.deleteError);
+    const createStatus = useAppSelector((s) => s.notes.createStatus);
+    const deleteStatus = useAppSelector((s) => s.notes.deleteStatus);
+
     const [text, setText] = useState('');
     const [tagId, setTagId] = useState('');
-    const [formError, setFormError] = useState('');
-    const [actionLoading, setActionLoading] = useState(false);
-
-    const fetchAll = useCallback(async () => {
-        setLoadError('');
-        try {
-            const [notesRes, tagsRes] = await Promise.all([api.get('/notes'), api.get('/tags')]);
-            setNotes(Array.isArray(notesRes.data) ? notesRes.data : []);
-            setTags(Array.isArray(tagsRes.data) ? tagsRes.data : []);
-            setTagId((prev) => {
-                if (prev) {
-                    return prev;
-                }
-                const list = tagsRes.data;
-                if (Array.isArray(list) && list.length > 0) {
-                    return String(list[0].id);
-                }
-                return '';
-            });
-        } catch (err) {
-            setLoadError(err.response?.data?.message ?? 'Impossible de charger les données.');
-            setNotes([]);
-            setTags([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
 
     useEffect(() => {
-        fetchAll();
-    }, [fetchAll]);
+        dispatch(fetchNotes());
+        dispatch(fetchTags());
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (!tagId && tags.length > 0) {
+            setTagId(String(tags[0].id));
+        }
+    }, [tags, tagId]);
 
     async function handleCreate(e) {
         e.preventDefault();
-        setFormError('');
         if (!tagId) {
-            setFormError('Choisissez un tag ou créez-en un sur la page Tags.');
             return;
         }
-        setActionLoading(true);
         try {
-            const { data } = await api.post('/notes', {
-                text,
-                tag_id: Number(tagId),
-            });
-            setNotes((prev) => [data, ...prev]);
+            await dispatch(
+                createNote({
+                    text,
+                    tag_id: Number(tagId),
+                }),
+            ).unwrap();
             setText('');
-        } catch (err) {
-            setFormError(formatValidationMessage(err.response?.data));
-        } finally {
-            setActionLoading(false);
+        } catch {
+            // erreur dans le store
         }
     }
 
@@ -69,16 +55,18 @@ export default function NotesPage() {
         if (!window.confirm('Supprimer cette note ?')) {
             return;
         }
-        setActionLoading(true);
         try {
-            await api.delete(`/notes/${id}`);
-            setNotes((prev) => prev.filter((n) => n.id !== id));
-        } catch (err) {
-            setFormError(formatValidationMessage(err.response?.data));
-        } finally {
-            setActionLoading(false);
+            await dispatch(deleteNote(id)).unwrap();
+        } catch {
+            // erreur dans le store
         }
     }
+
+    const loading = listStatus === 'loading' || tagsListStatus === 'loading';
+    const actionLoading = createStatus === 'loading' || deleteStatus === 'loading';
+    const loadError = listError || tagsListError;
+    const formError = createError ? formatValidationMessage(createError) : '';
+    const mutationMsg = deleteError ? formatValidationMessage(deleteError) : '';
 
     if (loading) {
         return (
@@ -92,14 +80,17 @@ export default function NotesPage() {
         <div className="space-y-8">
             <div>
                 <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Notes</h1>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    Données issues de <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">GET /api/notes</code>.
-                </p>
             </div>
 
             {loadError ? (
                 <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200" role="alert">
                     {loadError}
+                </p>
+            ) : null}
+
+            {mutationMsg ? (
+                <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200" role="alert">
+                    {mutationMsg}
                 </p>
             ) : null}
 

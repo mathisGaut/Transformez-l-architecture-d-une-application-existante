@@ -4,18 +4,18 @@ import AppShell from './layouts/AppShell.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import NotesPage from './pages/NotesPage.jsx';
 import TagsPage from './pages/TagsPage.jsx';
-import { AUTH_TOKEN_KEY } from './lib/api.js';
+import { useAppSelector } from './store/hooks.js';
 
 function RootRedirect() {
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    const user = useAppSelector((s) => s.auth.user);
 
-    return <Navigate to={token ? '/notes' : '/login'} replace />;
+    return <Navigate to={user ? '/notes' : '/login'} replace />;
 }
 
 function ProtectedLayout() {
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    const user = useAppSelector((s) => s.auth.user);
 
-    if (!token) {
+    if (!user) {
         return <Navigate to="/login" replace />;
     }
 

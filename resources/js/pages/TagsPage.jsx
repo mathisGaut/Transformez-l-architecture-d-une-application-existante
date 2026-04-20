@@ -1,49 +1,37 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import api from '../lib/api.js';
+import { clearTagCreateError, createTag, fetchTags } from '../features/tags/tagsSlice.js';
 import { formatValidationMessage } from '../lib/formatApiError.js';
+import { useAppDispatch, useAppSelector } from '../store/hooks.js';
 
 export default function TagsPage() {
-    const [tags, setTags] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [loadError, setLoadError] = useState('');
-    const [name, setName] = useState('');
-    const [formError, setFormError] = useState('');
-    const [submitting, setSubmitting] = useState(false);
+    const dispatch = useAppDispatch();
+    const tags = useAppSelector((s) => s.tags.items);
+    const listStatus = useAppSelector((s) => s.tags.listStatus);
+    const listError = useAppSelector((s) => s.tags.listError);
+    const createError = useAppSelector((s) => s.tags.createError);
+    const createStatus = useAppSelector((s) => s.tags.createStatus);
 
-    const fetchTags = useCallback(async () => {
-        setLoadError('');
-        try {
-            const { data } = await api.get('/tags');
-            setTags(Array.isArray(data) ? data : []);
-        } catch (err) {
-            setLoadError(err.response?.data?.message ?? 'Impossible de charger les tags.');
-            setTags([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const [name, setName] = useState('');
 
     useEffect(() => {
-        fetchTags();
-    }, [fetchTags]);
+        dispatch(fetchTags());
+    }, [dispatch]);
 
     async function handleSubmit(e) {
         e.preventDefault();
-        setFormError('');
-        setSubmitting(true);
+        dispatch(clearTagCreateError());
         try {
-            const { data } = await api.post('/tags', { name: name.trim() });
-            setTags((prev) =>
-                [...prev, data].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })),
-            );
+            await dispatch(createTag(name)).unwrap();
             setName('');
-        } catch (err) {
-            setFormError(formatValidationMessage(err.response?.data));
-        } finally {
-            setSubmitting(false);
+        } catch {
+            // erreur dans le store
         }
     }
+
+    const loading = listStatus === 'loading';
+    const submitting = createStatus === 'loading';
+    const formError = createError ? formatValidationMessage(createError) : '';
 
     if (loading) {
         return (
@@ -57,14 +45,11 @@ export default function TagsPage() {
         <div className="space-y-8">
             <div>
                 <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Tags</h1>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    Données issues de <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">GET /api/tags</code>.
-                </p>
             </div>
 
-            {loadError ? (
+            {listError ? (
                 <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200" role="alert">
-                    {loadError}
+                    {listError}
                 </p>
             ) : null}
 

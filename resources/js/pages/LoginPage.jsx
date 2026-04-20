@@ -1,49 +1,48 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
-import api, { AUTH_TOKEN_KEY } from '../lib/api.js';
+import { clearLoginError, login } from '../features/auth/authSlice.js';
+import { formatValidationMessage } from '../lib/formatApiError.js';
+import { useAppDispatch, useAppSelector } from '../store/hooks.js';
 
-function errorMessage(err) {
-    if (err.response?.data?.errors?.email?.[0]) {
-        return err.response.data.errors.email[0];
+function loginErrorMessage(payload) {
+    if (!payload) {
+        return '';
     }
-    if (err.response?.data?.message) {
-        return err.response.data.message;
+    if (payload.errors?.email?.[0]) {
+        return payload.errors.email[0];
     }
-    return 'Connexion impossible. Vérifiez vos identifiants.';
+    return formatValidationMessage(payload);
 }
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const user = useAppSelector((s) => s.auth.user);
+    const loginStatus = useAppSelector((s) => s.auth.loginStatus);
+    const loginError = useAppSelector((s) => s.auth.loginError);
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
 
-    if (localStorage.getItem(AUTH_TOKEN_KEY)) {
+    if (user) {
         return <Navigate to="/notes" replace />;
     }
 
     async function handleSubmit(e) {
         e.preventDefault();
-        setError('');
-        setLoading(true);
+        dispatch(clearLoginError());
 
         try {
-            const { data } = await api.post('/login', {
-                email,
-                password,
-                device_name: 'react-spa',
-            });
-
-            localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+            await dispatch(login({ email, password })).unwrap();
             navigate('/notes', { replace: true });
-        } catch (err) {
-            setError(errorMessage(err));
-        } finally {
-            setLoading(false);
+        } catch {
+            // erreur déjà dans le store
         }
     }
+
+    const loading = loginStatus === 'loading';
+    const errorText = loginErrorMessage(loginError);
 
     return (
         <div className="flex min-h-screen flex-col justify-center px-4">
@@ -85,9 +84,9 @@ export default function LoginPage() {
                         />
                     </div>
 
-                    {error ? (
+                    {errorText ? (
                         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/50 dark:text-red-300" role="alert">
-                            {error}
+                            {errorText}
                         </p>
                     ) : null}
 

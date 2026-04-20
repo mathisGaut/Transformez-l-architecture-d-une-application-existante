@@ -83,7 +83,7 @@ flowchart LR
 | **1 — Socle SPA + auth API** | Fait | Application React sous **`/app`** (`/app/login`, navigation). **`POST /api/login`**, token Sanctum, **`POST /api/logout`**. Le dashboard **Livewire** (`/dashboard`) reste disponible en parallèle. |
 | **2 — Notes via API** | Fait | Liste **`GET /api/notes`**, création **`POST /api/notes`** (`text`, `tag_id`), suppression **`DELETE /api/notes/{id}`** ; sélection du tag depuis **`GET /api/tags`**. |
 | **3 — Tags via API** | Fait | Liste **`GET /api/tags`**, création **`POST /api/tags`** (`name`, validation unique). |
-| **4 — State management (RTK)** | À venir | Centraliser auth + données dans Redux Toolkit selon la doc [étape 2](docs/architecture-front-exercice2-etape2.md). |
+| **4 — State management (RTK)** | Fait | **`@reduxjs/toolkit`** + **`react-redux`** : `configureStore`, slices **`auth`** (`initializeAuth`, `login`, `logout`), **`notes`** (`fetchNotes`, `createNote`, `deleteNote`), **`tags`** (`fetchTags`, `createTag`). Composants connectés via **`useAppDispatch`** / **`useAppSelector`** ; gate **`AppSessionGate`** pour `initializeAuth`. Voir `resources/js/store/` et `resources/js/features/`. |
 | **5 — Retrait Livewire** | À venir | Supprimer les composants Livewire du périmètre notes/tags une fois la SPA stabilisée. |
 
 En développement, lancer **`npm run dev`** en parallèle de PHP/Herd pour le rechargement à chaud des fichiers React.

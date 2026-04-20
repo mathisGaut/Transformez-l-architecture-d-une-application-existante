@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
-import api, { AUTH_TOKEN_KEY } from '../lib/api.js';
+import { logout } from '../features/auth/authSlice.js';
+import { useAppDispatch } from '../store/hooks.js';
 
 const linkClass = ({ isActive }) =>
     [
@@ -12,16 +13,11 @@ const linkClass = ({ isActive }) =>
 
 export default function AppShell() {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
     async function handleLogout() {
-        try {
-            await api.post('/logout');
-        } catch {
-            // token may already be invalid; still clear local session
-        } finally {
-            localStorage.removeItem(AUTH_TOKEN_KEY);
-            navigate('/login', { replace: true });
-        }
+        await dispatch(logout());
+        navigate('/login', { replace: true });
     }
 
     return (
