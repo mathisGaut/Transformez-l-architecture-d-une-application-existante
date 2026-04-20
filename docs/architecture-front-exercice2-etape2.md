@@ -1,5 +1,28 @@
 # Exercice 2 — Étape 2 : architecture front avec state management
 
+Ce document détaille la **couche d’état** de l’**architecture front cible** (Redux Toolkit + thunks). Pour la vision d’ensemble (React, API, monolithe Laravel), voir le [README](../README.md) et l’[étape 1](architecture-front-exercice2-etape1.md).
+
+## Sommaire
+
+- [Architecture cible : rôle du state management (justification)](#architecture-cible--rôle-du-state-management-justification)
+- [1. Choix de la solution de state management](#1-choix-de-la-solution-de-state-management)
+- [2. Pattern de conception associé : Flux (Redux)](#2-pattern-de-conception-associé--flux-redux)
+- [3. Schéma d’organisation front-end (avec Redux Toolkit)](#3-schéma-dorganisation-front-end-avec-redux-toolkit)
+- [4. Flux d’information : UI → état → effets](#4-flux-dinformation-ui--état--effets)
+- [5. Règles de conception (rappel consigne)](#5-règles-de-conception-rappel-consigne)
+
+---
+
+## Architecture cible : rôle du state management (justification)
+
+Dans l’architecture cible globale, **Redux Toolkit** n’est pas une fin en soi : il matérialise le pattern **Flux** attendu par l’énoncé — **flux unidirectionnel**, effets réseau hors des composants présentateurs, **une source de vérité** pour notes, tags, session et erreurs API.
+
+**Pourquoi c’est cohérent avec la cible**
+
+- Les données métier viennent de l’**API** (pas du state interne Livewire) : les **async thunks** sont l’endroit naturel pour `POST /api/login`, `GET /api/notes`, etc., puis pour mettre à jour le store.
+- **Découplage** : les écrans React se contentent d’afficher et de dispatcher des actions ; les règles de rafraîchissement après mutation restent centralisées (équivalent propre aux `dispatch` / rechargements Livewire).
+- **Traçabilité** : même parcours utilisateur reproductible en développement (Redux DevTools), utile pour un rapport de transformation d’architecture.
+
 ---
 
 ## 1. Choix de la solution de state management

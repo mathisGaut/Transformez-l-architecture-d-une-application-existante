@@ -1,5 +1,41 @@
 # Exercice 2 — Étape 1 : analyse de l’architecture front actuelle (couplages)
 
+## Sommaire
+
+- [Description de l’architecture cible (front)](#description-de-larchitecture-cible-front)
+- [Justification de l’architecture cible (front)](#justification-de-larchitecture-cible-front)
+- [1. Diagramme de composants — architecture de base (mise à jour front explicite)](#1-diagramme-de-composants--architecture-de-base-mise-à-jour-front-explicite)
+- [2. Avantages et limites de l’architecture front actuelle](#2-avantages-et-limites-de-larchitecture-front-actuelle)
+- [3. Écart : architecture front de base vs architecture cible (React + state management)](#3-écart--architecture-front-de-base-vs-architecture-cible-react--state-management)
+- [4. Parcours d’une action utilisateur (interface → base de données)](#4-parcours-dune-action-utilisateur-interface--base-de-données)
+- [5. Vues PHP générant du HTML dynamique (périmètre notes / tags)](#5-vues-php-générant-du-html-dynamique-périmètre-notes--tags)
+- [6. Éléments à extraire côté client (Livewire → React)](#6-éléments-à-extraire-côté-client-livewire--react)
+
+---
+
+## Description de l’architecture cible (front)
+
+L’architecture **cible** pour le périmètre notes / tags est une **application React** (bundlée avec **Vite**) qui :
+
+- consomme **exclusivement** l’**API REST** déjà exposée par Laravel (`GET/POST/DELETE` sur `/api/notes`, `/api/tags`, login Sanctum, etc.) ;
+- gère l’**état applicatif** (utilisateur, token, listes, erreurs réseau) via un **state management** global — dans ce projet, **Redux Toolkit** (voir [étape 2](architecture-front-exercice2-etape2.md)) ;
+- remplace progressivement les composants **Livewire** et les vues associées par des **composants React** montés sur une page « coquille » Blade (point d’entrée unique du bundle).
+
+La page Laravel ne sert plus de logique métier pour ces écrans : elle délivre le HTML minimal (souvent un `div` racine) et les assets ; toute interaction métier passe par **HTTP + JSON** et le **Bearer token**.
+
+---
+
+## Justification de l’architecture cible (front)
+
+| Motif | Détail |
+|-------|--------|
+| **Alignement sur l’API back-end** | Le même contrat que les futurs clients (mobile, intégrations) évite un second canal parallèle (Livewire + session) pour la même donnée à terme. |
+| **État client explicite** | Formulaires et listes ne dépendent plus du cycle Livewire serveur ; un store (RTK) documente où vit l’état et simplifie les tests et le débogage (DevTools). |
+| **Évolutivité UI** | React facilite la composition d’interfaces plus riches (feedback instantané, navigation client) sans multiplier les allers-retours serveur pour chaque frappe si le besoin apparaît. |
+| **Pédagogie du parcours** | Séparer **UI / API / persistance** illustre une transformation d’architecture réaliste (progressive, sans tout jeter d’un coup). |
+
+La synthèse globale (back + front) est rappelée dans le [README](../README.md).
+
 ---
 
 ## 1. Diagramme de composants — architecture de base (mise à jour front explicite)

@@ -2,6 +2,41 @@
 
 Objectif : décrire l’évolution du back-end et l’API REST, de façon **simple** et alignée sur le code actuel.
 
+## Sommaire
+
+- [Architecture cible (back-end) et justification](#architecture-cible-back-end-et-justification)
+- [1. Analyse de l’architecture initiale](#1-analyse-de-larchitecture-initiale)
+- [2. Schéma simplifié — architecture de base (avant)](#2-schéma-simplifié--architecture-de-base-avant)
+- [3. Schéma — architecture back-end refactorisée (actuelle)](#3-schéma--architecture-back-end-refactorisée-actuelle)
+- [4. Rôle des couches (routes, contrôleurs, « accès données »)](#4-rôle-des-couches-routes-contrôleurs-accès-données)
+- [5. Définition de l’API REST](#5-définition-de-lapi-rest)
+
+---
+
+## Architecture cible (back-end) et justification
+
+### Description
+
+L’architecture **cible** côté serveur pour ce parcours est un **monolithe Laravel structuré en couches** :
+
+- une **API REST** (`routes/api.php`, contrôleurs dédiés, réponses JSON) pour tout client externe au cycle requête/réponse « page web classique » ;
+- des **services applicatifs** (`NoteService`, `TagService`, interfaces) qui concentrent la logique CRUD et les règles d’accès par utilisateur ;
+- les **modèles Eloquent** pour le mapping relationnel, appelés **depuis les services** (pas de logique métier dispersée dans les contrôleurs) ;
+- l’**authentification API** via **Laravel Sanctum** (tokens Bearer), complémentaire à l’auth web par session lorsque Livewire est encore utilisé.
+
+Cette cible **n’impose pas** une couche Repository séparée : le périmètre métier reste limité ; les services jouent le rôle d’orchestrateurs et gardent le code lisible sans sur-ingénierie.
+
+### Justification
+
+| Choix | Raison |
+|-------|--------|
+| **API + services partagés** | Un client React, un futur mobile ou un outil scripté consomment la **même** logique que l’UI historique → pas de divergence de comportement entre canaux. |
+| **Sanctum / tokens** | Les SPA et les clients non-navigateur ne s’appuient pas naturellement sur les cookies de session comme Livewire ; un contrat Bearer est explicite et contrôlable. |
+| **Pas de microservices à ce stade** | Le gains principal du projet est la **clarification des frontières** (HTTP JSON, services) dans un déploiement unique — coût et complexité maîtrisés pour un périmètre CRUD. |
+| **Services sans Repository obligatoire** | Réduit la verbosité tant que les requêtes restent simples ; on peut introduire des repositories plus tard si les accès données se complexifient. |
+
+Pour la vision **complète** (front React + state management), voir aussi le [README](../README.md) et les documents front [architecture-front-exercice2-etape1.md](architecture-front-exercice2-etape1.md), [architecture-front-exercice2-etape2.md](architecture-front-exercice2-etape2.md).
+
 ---
 
 ## 1. Analyse de l’architecture initiale
